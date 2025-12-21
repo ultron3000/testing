@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>HLS Player Embed</title>
+<title>Cloud TV Player Embed</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- Plyr -->
@@ -13,9 +13,6 @@
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
-/* ===============================
-   ORIGINAL FAST BASE (RESTORED)
-   =============================== */
 html, body {
     margin: 0;
     padding: 0;
@@ -24,46 +21,33 @@ html, body {
     overflow: hidden;
 }
 
-/* Player fills iframe */
 .plyr {
     width: 100%;
     height: 100%;
-    border-radius: 0;
 }
 
-/* Subtle polish ONLY (no effects) */
 video {
     width: 100%;
     height: 100%;
     background: #000;
-}
-
-/* Slightly sharper controls, zero cost */
-.plyr__control {
-    font-smooth: always;
-    -webkit-font-smoothing: antialiased;
 }
 </style>
 </head>
 
 <body>
 
-<!-- VIDEO (UNCHANGED) -->
-<video id="player" playsinline>
+<video id="player" playsinline muted>
     <source src="" type="application/vnd.apple.mpegurl" />
     <a href="" download>Download</a>
 </video>
 
-<!-- CONFIG (UNCHANGED) -->
+<!-- ✅ AUTOPLAY ENABLED SAFELY -->
 <script type="application/json" id="embed-config">{
-    "autoplay": false,
-    "muted": false,
+    "autoplay": true,
+    "muted": true,
     "hidecontrols": false
 }</script>
 
-<!-- ===============================
-     YOUR ORIGINAL JS — RESTORED
-     =============================== -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const video = document.getElementById('player');
@@ -75,6 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const config = JSON.parse(configElement.textContent);
 
     const plyrOptions = {
+        muted: true,
         captions: { active: true, update: true, language: 'en' }
     };
 
@@ -92,38 +77,33 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
     }
 
-    if (config.muted) {
-        plyrOptions.muted = true;
-    }
-
     const player = new Plyr(video, plyrOptions);
 
     const videoUrl = '';
+
+    /* ✅ FASTER HLS STARTUP (SAFE) */
+    const hlsConfig = {
+        lowLatencyMode: true,
+        maxBufferLength: 15,
+        maxMaxBufferLength: 30,
+        backBufferLength: 30,
+        enableWorker: true
+    };
+
     let hls = null;
 
     if (Hls.isSupported()) {
-        hls = new Hls();
+        hls = new Hls(hlsConfig);
         hls.loadSource(videoUrl);
         hls.attachMedia(video);
 
         hls.on(Hls.Events.MANIFEST_PARSED, function() {
-            if (config.autoplay) {
-                setTimeout(attemptSmartAutoplay, 100);
-            } else if (config.muted) {
-                player.muted = true;
-                video.muted = true;
-            }
+            setTimeout(attemptSmartAutoplay, 50);
         });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = videoUrl;
-
         video.addEventListener('loadedmetadata', function() {
-            if (config.autoplay) {
-                setTimeout(attemptSmartAutoplay, 100);
-            } else if (config.muted) {
-                player.muted = true;
-                video.muted = true;
-            }
+            setTimeout(attemptSmartAutoplay, 50);
         });
     }
 
@@ -132,17 +112,30 @@ document.addEventListener('DOMContentLoaded', function() {
         autoplayAttempted = true;
 
         try {
-            player.muted = false;
-            await player.play();
-            return;
-        } catch {}
-
-        try {
             player.muted = true;
-            isAutoplayMuted = true;
+            video.muted = true;
             await player.play();
-        } catch {}
+            isAutoplayMuted = true;
+        } catch (e) {
+            // Autoplay blocked (rare when muted)
+        }
     }
+
+    /* Allow unmute on interaction */
+    function handleInteraction() {
+        if (isAutoplayMuted) {
+            player.muted = false;
+            video.muted = false;
+            player.volume = 1;
+            video.volume = 1;
+            isAutoplayMuted = false;
+        }
+    }
+
+    ['click','touchstart','keydown'].forEach(evt => {
+        document.addEventListener(evt, handleInteraction, { once: true });
+    });
+
 });
 </script>
 
