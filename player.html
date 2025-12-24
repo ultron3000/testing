@@ -1,32 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cloud TV – Player</title>
 
-</script> 
-  <meta charset="UTF-8"> 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-  <title>Cloud TV</title> 
-  <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const streamId = urlParams.get('id');
-            
-            if (!streamId) return;
-            
-            fetch('channels.json')
-                .then(response => response.json())
-                .then(data => {
-                    const streamInfo = data.find(item => item.id === streamId);
-                    if (!streamInfo) return;
-                    
-                    const iframe = document.getElementById('stream-iframe');
-                    if (streamInfo.title) 
-                    {const key = encodeURIComponent(streamInfo.id); iframe.src=`https://ultron3000.github.io/testing/sony-player?url=https://allottplay.com/tv/toffee/live.php?id=${key}&e=.m3u8`;
-                    } else if (streamInfo.m3u8) {
-                        iframe.src = streamInfo.m3u8;
-                    }
-                });
-        });
-    </script> 
- </head> 
- <body style="position:absolute;margin: 0; padding: 0; height: 100%;width:100%;background:#000"> 
-  <iframe id="stream-iframe" style="width: 100%; height: 100%; border: none;" allow="autoplay; fullscreen" allowfullscreen></iframe> 
- </body>
+  <link rel="icon" href="https://static.readdy.ai/image/0ece273271e400e488b9947cb1e99e9a/a79b6f32c71c4ee2094ead0eb9c84c9b.png" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #111;
+      border-bottom: 1px solid #222;
+    }
+
+    header img {
+      height: 36px;
+    }
+
+    header span {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .player-wrapper {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 58px);
+      background: #000;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .error {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 16px;
+      color: #aaa;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="https://static.readdy.ai/image/0ece273271e400e488b9947cb1e99e9a/a79b6f32c71c4ee2094ead0eb9c84c9b.png" alt="Cloud TV" />
+  <span>Cloud TV</span>
+</header>
+
+<div class="player-wrapper" id="playerArea">
+  <iframe id="player" allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const channelId = params.get('id');
+const iframe = document.getElementById('player');
+const playerArea = document.getElementById('playerArea');
+
+function showError(msg) {
+  playerArea.innerHTML = `<div class=\"error\">${msg}</div>`;
+}
+
+fetch('./channels.json')
+  .then(r => r.json())
+  .then(data => {
+    const channel = data.find(c => c.id === channelId);
+
+    if (!channel) {
+      showError('Channel not found');
+      return;
+    }
+
+    if (!channel.url || !channel.keyId || !channel.key) {
+      showError('Invalid stream data');
+      return;
+    }
+
+    const mpd = encodeURIComponent(channel.url);
+    const keyId = channel.keyId;
+    const key = channel.key;
+
+    // DRM DASH player (works on GitHub Pages)
+    iframe.src = `https://ultron3000.github.io/star-sports/s-mpd.html?url=${mpd}&keyId=${keyId}&key=${key}`;
+  })
+  .catch(err => {
+    console.error(err);
+    showError('Failed to load channel data');
+  });
+</script>
+
+</body>
 </html>
