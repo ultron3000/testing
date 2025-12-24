@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cloud TV – Sony Channels</title>
+<title>Cloud TV</title>
 
 <link rel="icon" href="https://static.readdy.ai/image/0ece273271e400e488b9947cb1e99e9a/a79b6f32c71c4ee2094ead0eb9c84c9b.png" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -11,9 +11,10 @@
 <style>
 :root {
   --bg: #050509;
-  --border: rgba(255,255,255,.08);
+  --card: #0b0b12;
   --glass: rgba(255,255,255,.06);
-  --accent: #3b82f6;
+  --border: rgba(255,255,255,.08);
+  --accent: #00e5ff;
   --radius: 18px;
 }
 
@@ -26,13 +27,13 @@ body {
   margin: 0;
   font-family: 'Inter', system-ui, sans-serif;
   background:
-    radial-gradient(1200px 600px at top, #0b1020, transparent),
+    radial-gradient(1200px 600px at top, #0b1a2a, transparent),
     radial-gradient(800px 400px at bottom, #020024, transparent),
     var(--bg);
   color: #fff;
 }
 
-/* ===== HEADER ===== */
+/* ===== APP HEADER ===== */
 header {
   position: sticky;
   top: 0;
@@ -69,7 +70,7 @@ main {
   gap: 14px;
 }
 
-/* Mobile first */
+/* Mobile */
 @media (max-width: 600px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
@@ -115,7 +116,7 @@ main {
   }
 }
 
-/* Accent glow */
+/* Glow overlay */
 .card::after {
   content: '';
   position: absolute;
@@ -123,7 +124,7 @@ main {
   border-radius: inherit;
   background: radial-gradient(
     320px 140px at top,
-    rgba(59,130,246,.25),
+    rgba(0,229,255,.22),
     transparent
   );
   opacity: 0;
@@ -182,11 +183,11 @@ main {
 
 <header>
   <img src="https://static.readdy.ai/image/0ece273271e400e488b9947cb1e99e9a/a79b6f32c71c4ee2094ead0eb9c84c9b.png" alt="Cloud TV">
-  <span>Sony Channels</span>
+  <span>Cloud TV</span>
 </header>
 
 <main>
-  <div id="loading" class="loading">Loading Sony channels…</div>
+  <div id="loading" class="loading">Loading premium channels…</div>
   <div id="channels" class="grid"></div>
 </main>
 
@@ -210,7 +211,7 @@ fetch('./channels.json')
       };
 
       card.innerHTML = `
-        <div class="logo" style="background-image:url('${ch.logo || ''}')"></div>
+        <div class="logo" style="background-image:url('${ch.image || ''}')"></div>
         <div class="title">${ch.title || 'Live Channel'}</div>
       `;
 
