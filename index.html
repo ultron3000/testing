@@ -176,6 +176,36 @@ main {
   font-size: 14px;
   letter-spacing: .4px;
 }
+
+/* Categories Buttons - Mobile Friendly */
+#categories button {
+  background: linear-gradient(145deg, #ffeb3b, #fdd835);
+  color: #000;
+  border: none;
+  padding: 8px 18px;          /* smaller padding */
+  font-size: 14px;            /* smaller text */
+  margin: 6px;
+  cursor: pointer;
+  border-radius: 20px;        /* modern rounded look */
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  outline: none;
+}
+
+/* Hover (desktop) */
+#categories button:hover {
+  background: linear-gradient(145deg, #fdd835, #fbc02d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+}
+
+/* Active (mobile tap) */
+#categories button:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
 </style>
 </head>
 
@@ -187,21 +217,41 @@ main {
 </header>
 
 <main>
+  <!-- Categories Filter -->
+  <div id="categories" style="text-align: center; margin-bottom: 20px;">
+    <button onclick="filterCategory('All')">All</button>
+    <button onclick="filterCategory('Sports')">Sports</button>
+    <button onclick="filterCategory('Movies')">Movies</button>
+    <button onclick="filterCategory('Entertainment')">Entertainment</button>
+    <button onclick="filterCategory('Education')">Education</button>
+  </div>
+
   <div id="loading" class="loading">Loading premium channels…</div>
   <div id="channels" class="grid"></div>
 </main>
 
 <script>
-fetch('./channels.json')
-  .then(res => res.json())
-  .then(data => {
+  let allChannels = [];
+  
+  fetch('./channels.json')
+    .then(res => res.json())
+    .then(data => {
+      allChannels = data;  // Store the original data
+      displayChannels(allChannels);  // Display all channels initially
+    })
+    .catch(err => {
+      document.getElementById('loading').innerText = 'Failed to load channels';
+      console.error(err);
+    });
+
+  function displayChannels(channels) {
     document.getElementById('loading').style.display = 'none';
     const grid = document.getElementById('channels');
-
-    data.forEach(ch => {
+    grid.innerHTML = '';  // Clear existing channels
+    
+    channels.forEach(ch => {
       const card = document.createElement('div');
       card.className = 'card';
-
       card.onclick = () => {
         if (ch.id) {
           location.href = `player.html?id=${ch.id}`;
@@ -217,11 +267,16 @@ fetch('./channels.json')
 
       grid.appendChild(card);
     });
-  })
-  .catch(err => {
-    document.getElementById('loading').innerText = 'Failed to load channels';
-    console.error(err);
-  });
+  }
+
+  function filterCategory(category) {
+    if (category === 'All') {
+      displayChannels(allChannels);
+    } else {
+      const filteredChannels = allChannels.filter(ch => ch.category === category);
+      displayChannels(filteredChannels);
+    }
+  }
 </script>
 
 </body>
